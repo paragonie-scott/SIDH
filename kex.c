@@ -369,7 +369,6 @@ CRYPTO_STATUS SecretAgreement_A(
     clear_words((void*) A, 2 * pwords);
     clear_words((void*) C, 2 * pwords);
     clear_words((void*) jinv, 2 * pwords);
-    // Scott note: Why is this a 5 when there are 2's everywhere else?
     clear_words((void*) coeff, 5 * 2 * pwords);
       
     return Status;
