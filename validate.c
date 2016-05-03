@@ -15,8 +15,11 @@
 #include "SIDH_internal.h"
 
 
+/**
+ * Return true if a = b in GF(p751). Otherwise, return false
+ */
 static bool is_equal_fp(felm_t a, felm_t b)
-{ // Return true if a = b in GF(p751). Otherwise, return false
+{
     unsigned int i;
 
     for (i = 0; i < NWORDS_FIELD; i++) {
@@ -28,56 +31,83 @@ static bool is_equal_fp(felm_t a, felm_t b)
     return true;
 }
 
-
+/**
+ * Return true if a = b in GF(p751^2). Otherwise, return false
+ */
 static bool is_equal_fp2(f2elm_t a, f2elm_t b)
-{ // Return true if a = b in GF(p751^2). Otherwise, return false
-
-    return (is_equal_fp(a[0], b[0]) && is_equal_fp(a[1], b[1]));
+{
+    return (
+        is_equal_fp(a[0], b[0])
+            &&
+        is_equal_fp(a[1], b[1])
+    );
 }
 
-
+/**
+ * Output random value in GF(p751). It makes requests of random values to the 
+ * "random_bytes" function. 
+ * If successful, the output is given in "f2value".
+ * The "random_bytes" function, which is passed through the curve isogeny 
+ * structure PCurveIsogeny, should be set up in advance using 
+ * SIDH_curve_initialize().
+ * The caller is responsible of providing the "random_bytes" function passing
+ * random values as octets.
+ */
 CRYPTO_STATUS random_fp2(f2elm_t f2value, PCurveIsogenyStruct pCurveIsogeny)
-{ // Output random value in GF(p751). It makes requests of random values to the "random_bytes" function. 
-  // If successful, the output is given in "f2value".
-  // The "random_bytes" function, which is passed through the curve isogeny structure PCurveIsogeny, should be set up in advance using SIDH_curve_initialize().
-  // The caller is responsible of providing the "random_bytes" function passing random values as octets.
+{
     unsigned int ntry = 0, nbytes;    
     felm_t t1, p751;
     unsigned char mask;
     CRYPTO_STATUS Status = CRYPTO_ERROR_UNKNOWN;
     
-    clear_words((void*)f2value, 2*NWORDS_FIELD);    
+    clear_words(
+        (void*) f2value,
+         2 * NWORDS_FIELD
+    );
+
     fpcopy751(pCurveIsogeny->prime, p751);
-    nbytes = (pCurveIsogeny->pbits+7)/8;                       // Number of random bytes to be requested 
-    mask = (unsigned char)(8*nbytes - pCurveIsogeny->pbits);
-    mask = ((unsigned char)-1 >> mask);                        // Value for masking last random byte
+    
+    // Number of random bytes to be requested:
+    nbytes = (pCurveIsogeny->pbits+7)/8;
+    
+    mask = (unsigned char) ((8 * nbytes) - pCurveIsogeny->pbits);
+    
+    // Value for masking last random byte:
+    mask = (((unsigned char)-1) >> mask);
 
     do {
         ntry++;
-        if (ntry > 100) {                                      // Max. 100 iterations to obtain random value in [0, p751-1] 
+        // Max. 100 iterations to obtain random value in [0, p751-1]:
+        if (ntry > 100) {
             return CRYPTO_ERROR_TOO_MANY_ITERATIONS;
         }
-        Status = (pCurveIsogeny->RandomBytesFunction)(nbytes, (unsigned char*)&f2value[0]);
+        Status = (pCurveIsogeny->RandomBytesFunction)(
+            nbytes, 
+            (unsigned char*) &f2value[0]
+        );
         if (Status != CRYPTO_SUCCESS) {
             return Status;
         }
-        ((unsigned char*)&f2value[0])[nbytes-1] &= mask;       // Masking last byte 
+        // Masking last byte:
+        ((unsigned char*)&f2value[0])[nbytes-1] &= mask;
     } while (mp_sub(p751, f2value[0], t1, NWORDS_FIELD) == 1);
 
     ntry = 0;
     do {
         ntry++;
-        if (ntry > 100) {                                      // Max. 100 iterations to obtain random value in [0, p751-1] 
+        // Max. 100 iterations to obtain random value in [0, p751-1]:
+        if (ntry > 100) {
             return CRYPTO_ERROR_TOO_MANY_ITERATIONS;
         }
         Status = (pCurveIsogeny->RandomBytesFunction)(nbytes, (unsigned char*)&f2value[1]);
         if (Status != CRYPTO_SUCCESS) {
             return Status;
         }
-        ((unsigned char*)&f2value[1])[nbytes-1] &= mask;       // Masking last byte 
+        // Masking last byte:
+        ((unsigned char*)&f2value[1])[nbytes-1] &= mask;
     } while (mp_sub(p751, f2value[1], t1, NWORDS_FIELD) == 1);
 
-// Cleanup
+    // Cleanup
     clear_words((void*)t1, NWORDS_FIELD);
 
     return CRYPTO_SUCCESS;
@@ -153,9 +183,20 @@ static void line_indeterminant_TPL(f2elm_t a, f2elm_t b, f2elm_t c, f2elm_t d, f
     fp2add751(b, t1, b);  
 }
 
-
-static void TPLline(point_proj_t P, point_proj_t Q, publickey_t PK, point_proj_t UP, point_proj_t UQ, f2elm_t alpha_numer, f2elm_t beta_numer, f2elm_t alpha_denom, f2elm_t beta_denom)   /// x,z,X,Z,xP,xQ,A 
-{
+/**
+ * x,z,X,Z,xP,xQ,A
+ */
+static void TPLline(
+    point_proj_t P,
+    point_proj_t Q,
+    publickey_t PK,
+    point_proj_t UP,
+    point_proj_t UQ,
+    f2elm_t alpha_numer,
+    f2elm_t beta_numer,
+    f2elm_t alpha_denom,
+    f2elm_t beta_denom
+) {
     f2elm_t x, z, X, Z;
     f2elm_t t0, t1, t2, t3, t4, t5, t6, l0P, l1P, l2P, l0Q, l1Q, l2Q;
 
@@ -305,10 +346,15 @@ static void TPLline(point_proj_t P, point_proj_t Q, publickey_t PK, point_proj_t
     fp2mul751_mont(t1, beta_denom, beta_denom);        // beta_denom:=beta_denom*t1;
 }
 
-
-CRYPTO_STATUS Validate_PKA(unsigned char* pPublicKeyA, bool* valid, PCurveIsogenyStruct CurveIsogeny)
-{ // Bob validating Alice's public key
-  // CurveIsogeny must be set up in advance using SIDH_curve_initialize().
+/**
+ * Bob validating Alice's public key
+ * CurveIsogeny must be set up in advance using SIDH_curve_initialize().
+ */
+CRYPTO_STATUS Validate_PKA(
+    unsigned char* pPublicKeyA,
+    bool* valid, 
+    PCurveIsogenyStruct CurveIsogeny
+) {
     f2elm_t PKA[4];
     f2elm_t t0, t1, t2, t3, t4, t5, t6, t7, lambdaP, lambdaQ, lnQ, lnP, ldQ, ldP, uP = {0}, uQ = {0}, uPD = {0}, uQD = {0}, sqP, sqQ, sq;
     f2elm_t rvalue, alphan, betan, alphad, betad, alpha_numer = {0}, alpha_denom = {0}, beta_numer = {0}, beta_denom = {0}, one = {0}, zero = {0};
@@ -322,11 +368,24 @@ CRYPTO_STATUS Validate_PKA(unsigned char* pPublicKeyA, bool* valid, PCurveIsogen
         clear_words((void*)rvalue, 2*NWORDS_FIELD);
         return Status;
     }
-                      
-    to_fp2mont(((f2elm_t*)pPublicKeyA)[0], PKA[0]);    // Conversion of Alice's public key to Montgomery representation
-    to_fp2mont(((f2elm_t*)pPublicKeyA)[1], PKA[1]);
-    to_fp2mont(((f2elm_t*)pPublicKeyA)[2], PKA[2]);
-    to_fp2mont(((f2elm_t*)pPublicKeyA)[3], PKA[3]);
+    
+    // Conversion of Alice's public key to Montgomery representation:                  
+    to_fp2mont(
+        ((f2elm_t*)pPublicKeyA)[0],
+         PKA[0]
+    );
+    to_fp2mont(
+        ((f2elm_t*)pPublicKeyA)[1],
+        PKA[1]
+    );
+    to_fp2mont(
+        ((f2elm_t*)pPublicKeyA)[2],
+        PKA[2]
+    );
+    to_fp2mont(
+        ((f2elm_t*)pPublicKeyA)[3],
+        PKA[3]
+     );
 
     fp2copy751(PKA[1], P->X);
     fpcopy751((digit_t*)CurveIsogeny->Montgomery_one, P->Z[0]);
@@ -486,10 +545,15 @@ CRYPTO_STATUS Validate_PKA(unsigned char* pPublicKeyA, bool* valid, PCurveIsogen
     return CRYPTO_SUCCESS;
 }
 
-
-CRYPTO_STATUS Validate_PKB(unsigned char* pPublicKeyB, bool* valid, PCurveIsogenyStruct CurveIsogeny)
-{ // Bob validating Alice's public key
-  // CurveIsogeny must be set up in advance using SIDH_curve_initialize().
+/**
+ * Bob validating Alice's public key
+ * CurveIsogeny must be set up in advance using SIDH_curve_initialize().
+ */
+CRYPTO_STATUS Validate_PKB(
+    unsigned char* pPublicKeyB,
+    bool* valid,
+    PCurveIsogenyStruct CurveIsogeny
+) {
     f2elm_t PKB[4];
     f2elm_t t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, fP = {0}, fQ = {0}, UP = {0}, UQ = {0}, VP = {0}, VQ = {0};
     f2elm_t rvalue, cP, cQ, alphaQi, betaPi, alphaPi, betaQi, alphaP = {0}, alphaQ = {0}, betaP = {0}, betaQ = {0}, one = {0}, zero = {0};
@@ -500,7 +564,10 @@ CRYPTO_STATUS Validate_PKB(unsigned char* pPublicKeyB, bool* valid, PCurveIsogen
     // Choose a random element in GF(p751^2), assume that it is in Montgomery representation
     Status = random_fp2(rvalue, CurveIsogeny);    
     if (Status != CRYPTO_SUCCESS) {
-        clear_words((void*)rvalue, 2*NWORDS_FIELD);
+        clear_words(
+            (void*) rvalue,
+            2 * NWORDS_FIELD
+        );
         return Status;
     }
                       

@@ -32,13 +32,13 @@ __inline void fpadd751(digit_t* a, digit_t* b, digit_t* c)
 
     carry = 0;
     for (i = 0; i < NWORDS_FIELD; i++) {
-        SUBC(carry, c[i], ((digit_t*)p751)[i], carry, c[i]); 
+        SUBC(carry, c[i], ((digit_t*) p751)[i], carry, c[i]); 
     }
     mask = 0 - (digit_t)carry;
 
     carry = 0;
     for (i = 0; i < NWORDS_FIELD; i++) {
-        ADDC(carry, c[i], ((digit_t*)p751)[i] & mask, carry, c[i]); 
+        ADDC(carry, c[i], ((digit_t*) p751)[i] & mask, carry, c[i]); 
     } 
     
 #elif (OS_TARGET == OS_LINUX)                 
@@ -65,7 +65,7 @@ __inline void fpsub751(digit_t* a, digit_t* b, digit_t* c)
 
     borrow = 0;
     for (i = 0; i < NWORDS_FIELD; i++) {
-        ADDC(borrow, c[i], ((digit_t*)p751)[i] & mask, borrow, c[i]); 
+        ADDC(borrow, c[i], ((digit_t*) p751)[i] & mask, borrow, c[i]); 
     }
     
 #elif (OS_TARGET == OS_LINUX)                 
@@ -82,7 +82,7 @@ __inline void fpneg751(digit_t* a)
     unsigned int i, borrow = 0;
 
     for (i = 0; i < NWORDS_FIELD; i++) {
-        SUBC(borrow, ((digit_t*)p751)[i], a[i], borrow, a[i]); 
+        SUBC(borrow, ((digit_t*) p751)[i], a[i], borrow, a[i]); 
     }
 }
 
@@ -96,7 +96,7 @@ void fpdiv2_751(digit_t* a, digit_t* c)
         
     mask = 0 - (digit_t)(a[0] & 1);    // If a is odd compute a+p521
     for (i = 0; i < NWORDS_FIELD; i++) {
-        ADDC(carry, a[i], ((digit_t*)p751)[i] & mask, carry, c[i]); 
+        ADDC(carry, a[i], ((digit_t*) p751)[i] & mask, carry, c[i]); 
     }
 
     mp_shiftr1(c, NWORDS_FIELD);
@@ -535,15 +535,15 @@ void rdc_mont(dfelm_t ma, felm_t mc)
     mc[2] = ma[2];
     mc[3] = ma[3];
     mc[4] = ma[4];
-    MUL128(mc[0], ((digit_t*)p751p1)[5], uv);
+    MUL128(mc[0], ((digit_t*) p751p1)[5], uv);
     ADDC(0, uv[0], ma[5], carry, uv[0]); 
     ADDC(carry, uv[1], 0, carry, uv[1]); 
     mc[5] = uv[0];
     uv[0] = uv[1];
     uv[1] = 0;
 
-    MULADD128(mc[0], ((digit_t*)p751p1)[6], uv, carry, uv);
-    MULADD128(mc[1], ((digit_t*)p751p1)[5], uv, carry, uv);
+    MULADD128(mc[0], ((digit_t*) p751p1)[6], uv, carry, uv);
+    MULADD128(mc[1], ((digit_t*) p751p1)[5], uv, carry, uv);
     t += carry;
     ADDC(0, uv[0], ma[6], carry, uv[0]); 
     ADDC(carry, uv[1], 0, carry, uv[1]); 
@@ -553,11 +553,11 @@ void rdc_mont(dfelm_t ma, felm_t mc)
     uv[1] = t;
     t = 0;
 
-    MULADD128(mc[0], ((digit_t*)p751p1)[7], uv, carry, uv);
+    MULADD128(mc[0], ((digit_t*) p751p1)[7], uv, carry, uv);
     t += carry;
-    MULADD128(mc[1], ((digit_t*)p751p1)[6], uv, carry, uv);
+    MULADD128(mc[1], ((digit_t*) p751p1)[6], uv, carry, uv);
     t += carry;
-    MULADD128(mc[2], ((digit_t*)p751p1)[5], uv, carry, uv);
+    MULADD128(mc[2], ((digit_t*) p751p1)[5], uv, carry, uv);
     t += carry;
     ADDC(0, uv[0], ma[7], carry, uv[0]); 
     ADDC(carry, uv[1], 0, carry, uv[1]); 
@@ -567,13 +567,13 @@ void rdc_mont(dfelm_t ma, felm_t mc)
     uv[1] = t;
     t = 0;
 
-    MULADD128(mc[0], ((digit_t*)p751p1)[8], uv, carry, uv);
+    MULADD128(mc[0], ((digit_t*) p751p1)[8], uv, carry, uv);
     t += carry;
-    MULADD128(mc[1], ((digit_t*)p751p1)[7], uv, carry, uv);
+    MULADD128(mc[1], ((digit_t*) p751p1)[7], uv, carry, uv);
     t += carry;
-    MULADD128(mc[2], ((digit_t*)p751p1)[6], uv, carry, uv);
+    MULADD128(mc[2], ((digit_t*) p751p1)[6], uv, carry, uv);
     t += carry;
-    MULADD128(mc[3], ((digit_t*)p751p1)[5], uv, carry, uv);
+    MULADD128(mc[3], ((digit_t*) p751p1)[5], uv, carry, uv);
     t += carry;
     ADDC(0, uv[0], ma[8], carry, uv[0]); 
     ADDC(carry, uv[1], 0, carry, uv[1]); 
@@ -583,15 +583,15 @@ void rdc_mont(dfelm_t ma, felm_t mc)
     uv[1] = t;
     t = 0;
 
-    MULADD128(mc[0], ((digit_t*)p751p1)[9], uv, carry, uv);
+    MULADD128(mc[0], ((digit_t*) p751p1)[9], uv, carry, uv);
     t += carry;
-    MULADD128(mc[1], ((digit_t*)p751p1)[8], uv, carry, uv);
+    MULADD128(mc[1], ((digit_t*) p751p1)[8], uv, carry, uv);
     t += carry;
-    MULADD128(mc[2], ((digit_t*)p751p1)[7], uv, carry, uv);
+    MULADD128(mc[2], ((digit_t*) p751p1)[7], uv, carry, uv);
     t += carry;
-    MULADD128(mc[3], ((digit_t*)p751p1)[6], uv, carry, uv);
+    MULADD128(mc[3], ((digit_t*) p751p1)[6], uv, carry, uv);
     t += carry;
-    MULADD128(mc[4], ((digit_t*)p751p1)[5], uv, carry, uv);
+    MULADD128(mc[4], ((digit_t*) p751p1)[5], uv, carry, uv);
     t += carry;
     ADDC(0, uv[0], ma[9], carry, uv[0]); 
     ADDC(carry, uv[1], 0, carry, uv[1]); 
@@ -601,17 +601,17 @@ void rdc_mont(dfelm_t ma, felm_t mc)
     uv[1] = t;
     t = 0;
 
-    MULADD128(mc[0], ((digit_t*)p751p1)[10], uv, carry, uv);
+    MULADD128(mc[0], ((digit_t*) p751p1)[10], uv, carry, uv);
     t += carry;
-    MULADD128(mc[1], ((digit_t*)p751p1)[9], uv, carry, uv);
+    MULADD128(mc[1], ((digit_t*) p751p1)[9], uv, carry, uv);
     t += carry;
-    MULADD128(mc[2], ((digit_t*)p751p1)[8], uv, carry, uv);
+    MULADD128(mc[2], ((digit_t*) p751p1)[8], uv, carry, uv);
     t += carry;
-    MULADD128(mc[3], ((digit_t*)p751p1)[7], uv, carry, uv);
+    MULADD128(mc[3], ((digit_t*) p751p1)[7], uv, carry, uv);
     t += carry;
-    MULADD128(mc[4], ((digit_t*)p751p1)[6], uv, carry, uv);
+    MULADD128(mc[4], ((digit_t*) p751p1)[6], uv, carry, uv);
     t += carry;
-    MULADD128(mc[5], ((digit_t*)p751p1)[5], uv, carry, uv);
+    MULADD128(mc[5], ((digit_t*) p751p1)[5], uv, carry, uv);
     t += carry;
     ADDC(0, uv[0], ma[10], carry, uv[0]); 
     ADDC(carry, uv[1], 0, carry, uv[1]); 
@@ -621,19 +621,19 @@ void rdc_mont(dfelm_t ma, felm_t mc)
     uv[1] = t;
     t = 0;
 
-    MULADD128(mc[0], ((digit_t*)p751p1)[11], uv, carry, uv);
+    MULADD128(mc[0], ((digit_t*) p751p1)[11], uv, carry, uv);
     t += carry;
-    MULADD128(mc[1], ((digit_t*)p751p1)[10], uv, carry, uv);
+    MULADD128(mc[1], ((digit_t*) p751p1)[10], uv, carry, uv);
     t += carry;
-    MULADD128(mc[2], ((digit_t*)p751p1)[9], uv, carry, uv);
+    MULADD128(mc[2], ((digit_t*) p751p1)[9], uv, carry, uv);
     t += carry;
-    MULADD128(mc[3], ((digit_t*)p751p1)[8], uv, carry, uv);
+    MULADD128(mc[3], ((digit_t*) p751p1)[8], uv, carry, uv);
     t += carry;
-    MULADD128(mc[4], ((digit_t*)p751p1)[7], uv, carry, uv);
+    MULADD128(mc[4], ((digit_t*) p751p1)[7], uv, carry, uv);
     t += carry;
-    MULADD128(mc[5], ((digit_t*)p751p1)[6], uv, carry, uv);
+    MULADD128(mc[5], ((digit_t*) p751p1)[6], uv, carry, uv);
     t += carry;
-    MULADD128(mc[6], ((digit_t*)p751p1)[5], uv, carry, uv);
+    MULADD128(mc[6], ((digit_t*) p751p1)[5], uv, carry, uv);
     t += carry;
     ADDC(0, uv[0], ma[11], carry, uv[0]); 
     ADDC(carry, uv[1], 0, carry, uv[1]); 
@@ -643,19 +643,19 @@ void rdc_mont(dfelm_t ma, felm_t mc)
     uv[1] = t;
     t = 0;
 
-    MULADD128(mc[1], ((digit_t*)p751p1)[11], uv, carry, uv);
+    MULADD128(mc[1], ((digit_t*) p751p1)[11], uv, carry, uv);
     t += carry;
-    MULADD128(mc[2], ((digit_t*)p751p1)[10], uv, carry, uv);
+    MULADD128(mc[2], ((digit_t*) p751p1)[10], uv, carry, uv);
     t += carry;
-    MULADD128(mc[3], ((digit_t*)p751p1)[9], uv, carry, uv);
+    MULADD128(mc[3], ((digit_t*) p751p1)[9], uv, carry, uv);
     t += carry;
-    MULADD128(mc[4], ((digit_t*)p751p1)[8], uv, carry, uv);
+    MULADD128(mc[4], ((digit_t*) p751p1)[8], uv, carry, uv);
     t += carry;
-    MULADD128(mc[5], ((digit_t*)p751p1)[7], uv, carry, uv);
+    MULADD128(mc[5], ((digit_t*) p751p1)[7], uv, carry, uv);
     t += carry;
-    MULADD128(mc[6], ((digit_t*)p751p1)[6], uv, carry, uv);
+    MULADD128(mc[6], ((digit_t*) p751p1)[6], uv, carry, uv);
     t += carry;
-    MULADD128(mc[7], ((digit_t*)p751p1)[5], uv, carry, uv);
+    MULADD128(mc[7], ((digit_t*) p751p1)[5], uv, carry, uv);
     t += carry;
     ADDC(0, uv[0], ma[12], carry, uv[0]); 
     ADDC(carry, uv[1], 0, carry, uv[1]); 
@@ -665,19 +665,19 @@ void rdc_mont(dfelm_t ma, felm_t mc)
     uv[1] = t;
     t = 0;
 
-    MULADD128(mc[2], ((digit_t*)p751p1)[11], uv, carry, uv);
+    MULADD128(mc[2], ((digit_t*) p751p1)[11], uv, carry, uv);
     t += carry;
-    MULADD128(mc[3], ((digit_t*)p751p1)[10], uv, carry, uv);
+    MULADD128(mc[3], ((digit_t*) p751p1)[10], uv, carry, uv);
     t += carry;
-    MULADD128(mc[4], ((digit_t*)p751p1)[9], uv, carry, uv);
+    MULADD128(mc[4], ((digit_t*) p751p1)[9], uv, carry, uv);
     t += carry;
-    MULADD128(mc[5], ((digit_t*)p751p1)[8], uv, carry, uv);
+    MULADD128(mc[5], ((digit_t*) p751p1)[8], uv, carry, uv);
     t += carry;
-    MULADD128(mc[6], ((digit_t*)p751p1)[7], uv, carry, uv);
+    MULADD128(mc[6], ((digit_t*) p751p1)[7], uv, carry, uv);
     t += carry;
-    MULADD128(mc[7], ((digit_t*)p751p1)[6], uv, carry, uv);
+    MULADD128(mc[7], ((digit_t*) p751p1)[6], uv, carry, uv);
     t += carry;
-    MULADD128(mc[8], ((digit_t*)p751p1)[5], uv, carry, uv);
+    MULADD128(mc[8], ((digit_t*) p751p1)[5], uv, carry, uv);
     t += carry;
     ADDC(0, uv[0], ma[13], carry, uv[0]); 
     ADDC(carry, uv[1], 0, carry, uv[1]); 
@@ -687,19 +687,19 @@ void rdc_mont(dfelm_t ma, felm_t mc)
     uv[1] = t;
     t = 0;
 
-    MULADD128(mc[3], ((digit_t*)p751p1)[11], uv, carry, uv);
+    MULADD128(mc[3], ((digit_t*) p751p1)[11], uv, carry, uv);
     t += carry;
-    MULADD128(mc[4], ((digit_t*)p751p1)[10], uv, carry, uv);
+    MULADD128(mc[4], ((digit_t*) p751p1)[10], uv, carry, uv);
     t += carry;
-    MULADD128(mc[5], ((digit_t*)p751p1)[9], uv, carry, uv);
+    MULADD128(mc[5], ((digit_t*) p751p1)[9], uv, carry, uv);
     t += carry;
-    MULADD128(mc[6], ((digit_t*)p751p1)[8], uv, carry, uv);
+    MULADD128(mc[6], ((digit_t*) p751p1)[8], uv, carry, uv);
     t += carry;
-    MULADD128(mc[7], ((digit_t*)p751p1)[7], uv, carry, uv);
+    MULADD128(mc[7], ((digit_t*) p751p1)[7], uv, carry, uv);
     t += carry;
-    MULADD128(mc[8], ((digit_t*)p751p1)[6], uv, carry, uv);
+    MULADD128(mc[8], ((digit_t*) p751p1)[6], uv, carry, uv);
     t += carry;
-    MULADD128(mc[9], ((digit_t*)p751p1)[5], uv, carry, uv);
+    MULADD128(mc[9], ((digit_t*) p751p1)[5], uv, carry, uv);
     t += carry;
     ADDC(0, uv[0], ma[14], carry, uv[0]); 
     ADDC(carry, uv[1], 0, carry, uv[1]); 
@@ -709,19 +709,19 @@ void rdc_mont(dfelm_t ma, felm_t mc)
     uv[1] = t;
     t = 0;
 
-    MULADD128(mc[4], ((digit_t*)p751p1)[11], uv, carry, uv);
+    MULADD128(mc[4], ((digit_t*) p751p1)[11], uv, carry, uv);
     t += carry;
-    MULADD128(mc[5], ((digit_t*)p751p1)[10], uv, carry, uv);
+    MULADD128(mc[5], ((digit_t*) p751p1)[10], uv, carry, uv);
     t += carry;
-    MULADD128(mc[6], ((digit_t*)p751p1)[9], uv, carry, uv);
+    MULADD128(mc[6], ((digit_t*) p751p1)[9], uv, carry, uv);
     t += carry;
-    MULADD128(mc[7], ((digit_t*)p751p1)[8], uv, carry, uv);
+    MULADD128(mc[7], ((digit_t*) p751p1)[8], uv, carry, uv);
     t += carry;
-    MULADD128(mc[8], ((digit_t*)p751p1)[7], uv, carry, uv);
+    MULADD128(mc[8], ((digit_t*) p751p1)[7], uv, carry, uv);
     t += carry;
-    MULADD128(mc[9], ((digit_t*)p751p1)[6], uv, carry, uv);
+    MULADD128(mc[9], ((digit_t*) p751p1)[6], uv, carry, uv);
     t += carry;
-    MULADD128(mc[10], ((digit_t*)p751p1)[5], uv, carry, uv);
+    MULADD128(mc[10], ((digit_t*) p751p1)[5], uv, carry, uv);
     t += carry;
     ADDC(0, uv[0], ma[15], carry, uv[0]); 
     ADDC(carry, uv[1], 0, carry, uv[1]); 
@@ -731,19 +731,19 @@ void rdc_mont(dfelm_t ma, felm_t mc)
     uv[1] = t;
     t = 0;
 
-    MULADD128(mc[5], ((digit_t*)p751p1)[11], uv, carry, uv);
+    MULADD128(mc[5], ((digit_t*) p751p1)[11], uv, carry, uv);
     t += carry;
-    MULADD128(mc[6], ((digit_t*)p751p1)[10], uv, carry, uv);
+    MULADD128(mc[6], ((digit_t*) p751p1)[10], uv, carry, uv);
     t += carry;
-    MULADD128(mc[7], ((digit_t*)p751p1)[9], uv, carry, uv);
+    MULADD128(mc[7], ((digit_t*) p751p1)[9], uv, carry, uv);
     t += carry;
-    MULADD128(mc[8], ((digit_t*)p751p1)[8], uv, carry, uv);
+    MULADD128(mc[8], ((digit_t*) p751p1)[8], uv, carry, uv);
     t += carry;
-    MULADD128(mc[9], ((digit_t*)p751p1)[7], uv, carry, uv);
+    MULADD128(mc[9], ((digit_t*) p751p1)[7], uv, carry, uv);
     t += carry;
-    MULADD128(mc[10], ((digit_t*)p751p1)[6], uv, carry, uv);
+    MULADD128(mc[10], ((digit_t*) p751p1)[6], uv, carry, uv);
     t += carry;
-    MULADD128(mc[11], ((digit_t*)p751p1)[5], uv, carry, uv);
+    MULADD128(mc[11], ((digit_t*) p751p1)[5], uv, carry, uv);
     t += carry;
     ADDC(0, uv[0], ma[16], carry, uv[0]); 
     ADDC(carry, uv[1], 0, carry, uv[1]); 
@@ -753,17 +753,17 @@ void rdc_mont(dfelm_t ma, felm_t mc)
     uv[1] = t;
     t = 0;
 
-    MULADD128(mc[6], ((digit_t*)p751p1)[11], uv, carry, uv);
+    MULADD128(mc[6], ((digit_t*) p751p1)[11], uv, carry, uv);
     t += carry;
-    MULADD128(mc[7], ((digit_t*)p751p1)[10], uv, carry, uv);
+    MULADD128(mc[7], ((digit_t*) p751p1)[10], uv, carry, uv);
     t += carry;
-    MULADD128(mc[8], ((digit_t*)p751p1)[9], uv, carry, uv);
+    MULADD128(mc[8], ((digit_t*) p751p1)[9], uv, carry, uv);
     t += carry;
-    MULADD128(mc[9], ((digit_t*)p751p1)[8], uv, carry, uv);
+    MULADD128(mc[9], ((digit_t*) p751p1)[8], uv, carry, uv);
     t += carry;
-    MULADD128(mc[10], ((digit_t*)p751p1)[7], uv, carry, uv);
+    MULADD128(mc[10], ((digit_t*) p751p1)[7], uv, carry, uv);
     t += carry;
-    MULADD128(mc[11], ((digit_t*)p751p1)[6], uv, carry, uv);
+    MULADD128(mc[11], ((digit_t*) p751p1)[6], uv, carry, uv);
     t += carry;
     ADDC(0, uv[0], ma[17], carry, uv[0]); 
     ADDC(carry, uv[1], 0, carry, uv[1]); 
@@ -773,15 +773,15 @@ void rdc_mont(dfelm_t ma, felm_t mc)
     uv[1] = t;
     t = 0;
 
-    MULADD128(mc[7], ((digit_t*)p751p1)[11], uv, carry, uv);
+    MULADD128(mc[7], ((digit_t*) p751p1)[11], uv, carry, uv);
     t += carry;
-    MULADD128(mc[8], ((digit_t*)p751p1)[10], uv, carry, uv);
+    MULADD128(mc[8], ((digit_t*) p751p1)[10], uv, carry, uv);
     t += carry;
-    MULADD128(mc[9], ((digit_t*)p751p1)[9], uv, carry, uv);
+    MULADD128(mc[9], ((digit_t*) p751p1)[9], uv, carry, uv);
     t += carry;
-    MULADD128(mc[10], ((digit_t*)p751p1)[8], uv, carry, uv);
+    MULADD128(mc[10], ((digit_t*) p751p1)[8], uv, carry, uv);
     t += carry;
-    MULADD128(mc[11], ((digit_t*)p751p1)[7], uv, carry, uv);
+    MULADD128(mc[11], ((digit_t*) p751p1)[7], uv, carry, uv);
     t += carry;
     ADDC(0, uv[0], ma[18], carry, uv[0]); 
     ADDC(carry, uv[1], 0, carry, uv[1]); 
@@ -791,13 +791,13 @@ void rdc_mont(dfelm_t ma, felm_t mc)
     uv[1] = t;
     t = 0;
 
-    MULADD128(mc[8], ((digit_t*)p751p1)[11], uv, carry, uv);
+    MULADD128(mc[8], ((digit_t*) p751p1)[11], uv, carry, uv);
     t += carry;
-    MULADD128(mc[9], ((digit_t*)p751p1)[10], uv, carry, uv);
+    MULADD128(mc[9], ((digit_t*) p751p1)[10], uv, carry, uv);
     t += carry;
-    MULADD128(mc[10], ((digit_t*)p751p1)[9], uv, carry, uv);
+    MULADD128(mc[10], ((digit_t*) p751p1)[9], uv, carry, uv);
     t += carry;
-    MULADD128(mc[11], ((digit_t*)p751p1)[8], uv, carry, uv);
+    MULADD128(mc[11], ((digit_t*) p751p1)[8], uv, carry, uv);
     t += carry;
     ADDC(0, uv[0], ma[19], carry, uv[0]); 
     ADDC(carry, uv[1], 0, carry, uv[1]); 
@@ -807,11 +807,11 @@ void rdc_mont(dfelm_t ma, felm_t mc)
     uv[1] = t;
     t = 0;
 
-    MULADD128(mc[9], ((digit_t*)p751p1)[11], uv, carry, uv);
+    MULADD128(mc[9], ((digit_t*) p751p1)[11], uv, carry, uv);
     t += carry;
-    MULADD128(mc[10], ((digit_t*)p751p1)[10], uv, carry, uv);
+    MULADD128(mc[10], ((digit_t*) p751p1)[10], uv, carry, uv);
     t += carry;
-    MULADD128(mc[11], ((digit_t*)p751p1)[9], uv, carry, uv);
+    MULADD128(mc[11], ((digit_t*) p751p1)[9], uv, carry, uv);
     t += carry;
     ADDC(0, uv[0], ma[20], carry, uv[0]); 
     ADDC(carry, uv[1], 0, carry, uv[1]); 
@@ -821,9 +821,9 @@ void rdc_mont(dfelm_t ma, felm_t mc)
     uv[1] = t;
     t = 0;
 
-    MULADD128(mc[10], ((digit_t*)p751p1)[11], uv, carry, uv);
+    MULADD128(mc[10], ((digit_t*) p751p1)[11], uv, carry, uv);
     t += carry;
-    MULADD128(mc[11], ((digit_t*)p751p1)[10], uv, carry, uv);
+    MULADD128(mc[11], ((digit_t*) p751p1)[10], uv, carry, uv);
     t += carry;
     ADDC(0, uv[0], ma[21], carry, uv[0]); 
     ADDC(carry, uv[1], 0, carry, uv[1]); 
@@ -833,19 +833,19 @@ void rdc_mont(dfelm_t ma, felm_t mc)
     uv[1] = t;
     t = 0;
 
-    MULADD128(mc[11], ((digit_t*)p751p1)[11], uv, carry, uv);
+    MULADD128(mc[11], ((digit_t*) p751p1)[11], uv, carry, uv);
     t += carry;
     ADDC(0, uv[0], ma[22], carry, mc[10]); 
     ADDC(carry, uv[1], 0, carry, uv[1]); 
     ADDC(0, uv[1], ma[23], carry, mc[11]); 
 
     // Final, constant-time subtraction     
-    carry = mp_sub(mc, (digit_t*)&p751, mc, NWORDS_FIELD);    // (carry, mc) = z - p751
+    carry = mp_sub(mc, (digit_t*) &p751, mc, NWORDS_FIELD);    // (carry, mc) = z - p751
     mask = 0 - (digit_t)carry;                                // if mc < 0 then mask = 0xFF..F, else if mc >= 0 then mask = 0x00..0
 
     carry = 0;
     for (i = 0; i < NWORDS_FIELD; i++) {                      // mc = mc + (mask & p751)
-        ADDC(carry, mc[i], ((digit_t*)p751)[i] & mask, carry, mc[i]);
+        ADDC(carry, mc[i], ((digit_t*) p751)[i] & mask, carry, mc[i]);
     }
     
 #elif (OS_TARGET == OS_LINUX)                 

@@ -30,13 +30,13 @@ __inline void fpadd751(digit_t* a, digit_t* b, digit_t* c)
 
     carry = 0;
     for (i = 0; i < NWORDS_FIELD; i++) {
-        SUBC(carry, c[i], ((digit_t*)p751)[i], carry, c[i]); 
+        SUBC(carry, c[i], ((digit_t*) p751)[i], carry, c[i]); 
     }
     mask = 0 - (digit_t)carry;
 
     carry = 0;
     for (i = 0; i < NWORDS_FIELD; i++) {
-        ADDC(carry, c[i], ((digit_t*)p751)[i] & mask, carry, c[i]); 
+        ADDC(carry, c[i], ((digit_t*) p751)[i] & mask, carry, c[i]); 
     }
 } 
 
@@ -55,7 +55,7 @@ __inline void fpsub751(digit_t* a, digit_t* b, digit_t* c)
 
     borrow = 0;
     for (i = 0; i < NWORDS_FIELD; i++) {
-        ADDC(borrow, c[i], ((digit_t*)p751)[i] & mask, borrow, c[i]); 
+        ADDC(borrow, c[i], ((digit_t*) p751)[i] & mask, borrow, c[i]); 
     }
 }
 
@@ -66,7 +66,7 @@ __inline void fpneg751(digit_t* a)
     unsigned int i, borrow = 0;
 
     for (i = 0; i < NWORDS_FIELD; i++) {
-        SUBC(borrow, ((digit_t*)p751)[i], a[i], borrow, a[i]); 
+        SUBC(borrow, ((digit_t*) p751)[i], a[i], borrow, a[i]); 
     }
 }
 
@@ -80,7 +80,7 @@ void fpdiv2_751(digit_t* a, digit_t* c)
         
     mask = 0 - (digit_t)(a[0] & 1);    // If a is odd compute a+p521
     for (i = 0; i < NWORDS_FIELD; i++) {
-        ADDC(carry, a[i], ((digit_t*)p751)[i] & mask, carry, c[i]); 
+        ADDC(carry, a[i], ((digit_t*) p751)[i] & mask, carry, c[i]); 
     }
 
     mp_shiftr1(c, NWORDS_FIELD);
@@ -98,10 +98,10 @@ void digit_x_digit(digit_t a, digit_t b, digit_t* c)
     bl = b & mask_low;
     bh = b >> (sizeof(digit_t) * 4);
 
-    albl = al*bl;
-    albh = al*bh;
-    ahbl = ah*bl;
-    ahbh = ah*bh;
+    albl = al * bl;
+    albh = al * bh;
+    ahbl = ah * bl;
+    ahbh = ah * bh;
     c[0] = albl & mask_low;                   // C00
 
     res1 = albl >> (sizeof(digit_t) * 4);
@@ -132,14 +132,14 @@ void mp_mul_schoolbook(digit_t* a, digit_t* b, digit_t* c, unsigned int nwords)
      for (i = 0; i < nwords; i++) {
           u = 0;
           for (j = 0; j < nwords; j++) {
-               MUL(a[i], b[j], UV+1, UV[0]); 
+               MUL(a[i], b[j], UV + 1, UV[0]); 
                ADDC(0, UV[0], u, carry, v); 
                u = UV[1] + carry;
-               ADDC(0, c[i+j], v, carry, v); 
+               ADDC(0, c[i + j], v, carry, v); 
                u = u + carry;
-               c[i+j] = v;
+               c[i + j] = v;
           }
-          c[nwords+i] = u;
+          c[nwords + i] = u;
      }
 }
 
@@ -152,7 +152,7 @@ void mp_mul_comba(digit_t* a, digit_t* b, digit_t* c, unsigned int nwords)
     
     for (i = 0; i < nwords; i++) {
         for (j = 0; j <= i; j++) {
-            MUL(a[j], b[i-j], UV+1, UV[0]); 
+            MUL(a[j], b[i - j], UV+1, UV[0]); 
             ADDC(0, UV[0], v, carry, v); 
             ADDC(carry, UV[1], u, carry, u); 
             t += carry;
@@ -165,7 +165,7 @@ void mp_mul_comba(digit_t* a, digit_t* b, digit_t* c, unsigned int nwords)
 
     for (i = nwords; i < 2*nwords-1; i++) {
         for (j = i-nwords+1; j < nwords; j++) {
-            MUL(a[j], b[i-j], UV+1, UV[0]); 
+            MUL(a[j], b[i - j], UV+1, UV[0]); 
             ADDC(0, UV[0], v, carry, v); 
             ADDC(carry, UV[1], u, carry, u); 
             t += carry;
@@ -175,7 +175,7 @@ void mp_mul_comba(digit_t* a, digit_t* b, digit_t* c, unsigned int nwords)
         u = t;
         t = 0;
     }
-    c[2*nwords-1] = v; 
+    c[(2 * nwords) - 1] = v; 
 }
 
 
@@ -184,12 +184,17 @@ void rdc_mont(dfelm_t ma, felm_t mc)
   // mc = ma*mb*R^-1 mod p751, where ma,mb,mc in [0, p751-1] and R = 2^768.
   // ma and mb are assumed to be in Montgomery representation.
     unsigned int i, j, carry, count = p751_ZERO_WORDS;
-    digit_t mask, UV[2], t = 0, u = 0, v = 0, z[NWORDS_FIELD+1] = {0};
+    digit_t mask, UV[2], t = 0, u = 0, v = 0, z[NWORDS_FIELD + 1] = {0};
 
     for (i = 0; i < NWORDS_FIELD; i++) {
         for (j = 0; j < i; j++) {
-            if (j < (i-p751_ZERO_WORDS+1)) { 
-                MUL(z[j], ((digit_t*)p751p1)[i-j], UV+1, UV[0]);
+            if (j < (i-p751_ZERO_WORDS + 1)) { 
+                MUL(
+                    z[j],
+                    ((digit_t*) p751p1)[i - j],
+                    UV + 1,
+                    UV[0]
+                );
                 ADDC(0, UV[0], v, carry, v); 
                 ADDC(carry, UV[1], u, carry, u); 
                 t += carry; 
@@ -204,13 +209,18 @@ void rdc_mont(dfelm_t ma, felm_t mc)
         t = 0;
     }    
 
-    for (i = NWORDS_FIELD; i < 2*NWORDS_FIELD-1; i++) {
+    for (i = NWORDS_FIELD; i < 2 * NWORDS_FIELD - 1; i++) {
         if (count > 0) {
             count -= 1;
         }
-        for (j = i-NWORDS_FIELD+1; j < NWORDS_FIELD; j++) {
-            if (j < (NWORDS_FIELD-count)) { 
-                MUL(z[j], ((digit_t*)p751p1)[i-j], UV+1, UV[0]);
+        for (j = i - NWORDS_FIELD + 1; j < NWORDS_FIELD; j++) {
+            if (j < (NWORDS_FIELD - count)) { 
+                MUL(
+                    z[j],
+                    ((digit_t*) p751p1)[i - j], 
+                    UV + 1,
+                    UV[0]
+                );
                 ADDC(0, UV[0], v, carry, v); 
                 ADDC(carry, UV[1], u, carry, u); 
                 t += carry;
@@ -224,19 +234,19 @@ void rdc_mont(dfelm_t ma, felm_t mc)
         u = t;
         t = 0;
     }
-    ADDC(0, v, ma[2*NWORDS_FIELD-1], carry, v); 
+    ADDC(0, v, ma[2 * NWORDS_FIELD - 1], carry, v); 
     ADDC(carry, u, 0, carry, u); 
     t += carry; 
-    z[NWORDS_FIELD-1] = v;
+    z[NWORDS_FIELD - 1] = v;
     z[NWORDS_FIELD] = u;
 
     // Final, constant-time subtraction     
-    carry = mp_sub(z, (digit_t*)&p751, mc, NWORDS_FIELD);     // (carry, mc) = z - p751
-    mask = 0 - (digit_t)carry;                                // if mc < 0 then mask = 0xFF..F, else if mc >= 0 then mask = 0x00..0
+    carry = mp_sub(z, (digit_t*) &p751, mc, NWORDS_FIELD);     // (carry, mc) = z - p751
+    mask = 0 - (digit_t) carry;                                // if mc < 0 then mask = 0xFF..F, else if mc >= 0 then mask = 0x00..0
 
     carry = 0;
     for (i = 0; i < NWORDS_FIELD; i++) {                      // mc = mc + (mask & p751)
-        ADDC(carry, mc[i], ((digit_t*)p751)[i] & mask, carry, mc[i]);
+        ADDC(carry, mc[i], ((digit_t*) p751)[i] & mask, carry, mc[i]);
     }
 
     return;

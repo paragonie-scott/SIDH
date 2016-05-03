@@ -69,17 +69,17 @@ typedef point_basefield_proj point_basefield_proj_t[1];
 
 static __inline unsigned int is_digit_nonzero_ct(digit_t x)
 { // Is x != 0?
-    return (unsigned int)((x | (0-x)) >> (RADIX-1));
+    return (unsigned int)((x | (0 - x)) >> (RADIX - 1));
 }
 
 static __inline unsigned int is_digit_zero_ct(digit_t x)
-{ // Is x = 0?
+{ // Is x == 0?
     return (unsigned int)(1 ^ is_digit_nonzero_ct(x));
 }
 
 static __inline unsigned int is_digit_lessthan_ct(digit_t x, digit_t y)
 { // Is x < y?
-    return (unsigned int)((x ^ ((x ^ y) | ((x - y) ^ y))) >> (RADIX-1)); 
+    return (unsigned int)((x ^ ((x ^ y) | ((x - y) ^ y))) >> (RADIX - 1)); 
 }
 
 
@@ -210,6 +210,16 @@ static __inline unsigned int is_digit_lessthan_ct(digit_t x, digit_t y)
 
 #endif
 
+
+/*
+ * Some macros for constant-time comparisons. These work over values in
+ * the 0..255 range. Returned value is 0x00 on "false", 0xFF on "true".
+ */
+#define CT_EQ(x, y) ((((0U - ((unsigned)(x) ^ (unsigned)(y))) >> 8) & 0xFF) ^ 0xFF)
+#define CT_GT(x, y) ((((unsigned)(y) - (unsigned)(x)) >> 8) & 0xFF)
+#define CT_GE(x, y) (CT_GT(y, x) ^ 0xFF)
+#define CT_LT(x, y) CT_GT(y, x)
+#define CT_LE(x, y) CT_GE(y, x)
 
 // Multiprecision multiplication selection
 #if (TARGET == TARGET_AMD64)

@@ -93,7 +93,7 @@ void xDBLe(point_proj_t P, point_proj_t Q, f2elm_t A, f2elm_t C, int e)
     fp2add751(C, C, A24num);                           
     fp2add751(A24num, A24num, A24den);                    
     fp2add751(A24num, A, A24num); 
-    copy_words((digit_t*)P, (digit_t*)Q, 2*2*NWORDS_FIELD);
+    copy_words((digit_t*) P, (digit_t*) Q, 2 * 2 * NWORDS_FIELD);
 
     for (i = 0; i < e; i++) {
         xDBL(Q, Q, A24num, A24den);
@@ -178,8 +178,16 @@ void xDBLADD_basefield(point_basefield_proj_t P, point_basefield_proj_t Q, felm_
 }
 
 
-void ladder(felm_t x, digit_t* m, point_basefield_proj_t P, point_basefield_proj_t Q, felm_t A24, unsigned int order_bits, unsigned int order_fullbits, PCurveIsogenyStruct CurveIsogeny)
-{ // The Montgomery ladder
+void ladder(
+    felm_t x,
+    digit_t* m,
+    point_basefield_proj_t P,
+    point_basefield_proj_t Q,
+    felm_t A24,
+    unsigned int order_bits,
+    unsigned int order_fullbits,
+    PCurveIsogenyStruct CurveIsogeny
+) { // The Montgomery ladder
   // Inputs: the affine x-coordinate of a point P on E: B*y^2=x^3+A*x^2+x, 
   //         scalar m
   //         curve constant A24 = (A+2)/4
@@ -192,19 +200,19 @@ void ladder(felm_t x, digit_t* m, point_basefield_proj_t P, point_basefield_proj
     int i;
 
     // Initializing with the points (1:0) and (x:1)
-    fpcopy751((digit_t*)CurveIsogeny->Montgomery_one, (digit_t*)P->X);
+    fpcopy751((digit_t*)CurveIsogeny->Montgomery_one, (digit_t*) P->X);
     fpzero751(P->Z);
     fpcopy751(x, Q->X);
-    fpcopy751((digit_t*)CurveIsogeny->Montgomery_one, (digit_t*)Q->Z);
+    fpcopy751((digit_t*)CurveIsogeny->Montgomery_one, (digit_t*) Q->Z);
 
     for (i = order_fullbits-order_bits; i > 0; i--) {
         mp_shiftl1(m, owords);
     }
     
     for (i = order_bits; i > 0; i--) {
-        bit = (unsigned int)(m[owords-1] >> (RADIX-1));
+        bit = (unsigned int)(m[owords - 1] >> (RADIX - 1));
         mp_shiftl1(m, owords);
-        mask = 0-(digit_t)bit;
+        mask = 0 - (digit_t) bit;
 
         swap_points_basefield(P, Q, mask);
         xDBLADD_basefield(P, Q, x, A24);           // If bit=0 then P <- 2*P and Q <- P+Q, 
@@ -213,8 +221,12 @@ void ladder(felm_t x, digit_t* m, point_basefield_proj_t P, point_basefield_proj
 }
 
 
-CRYPTO_STATUS BigMont_ladder(unsigned char* x, digit_t* m, unsigned char* xout, PCurveIsogenyStruct CurveIsogeny)
-{ // BigMont's scalar multiplication using the Montgomery ladder
+CRYPTO_STATUS BigMont_ladder(
+    unsigned char* x,
+    digit_t* m,
+    unsigned char* xout,
+    PCurveIsogenyStruct CurveIsogeny
+) { // BigMont's scalar multiplication using the Montgomery ladder
   // Inputs: x, the affine x-coordinate of a point P on BigMont: y^2=x^3+A*x^2+x, 
   //         scalar m.
   // Output: xout, the affine x-coordinate of m*(x:1)
@@ -228,7 +240,16 @@ CRYPTO_STATUS BigMont_ladder(unsigned char* x, digit_t* m, unsigned char* xout, 
     to_mont((digit_t*)x, X);
     
     copy_words(m, scalar, BIGMONT_NWORDS_ORDER);
-    ladder(X, scalar, P1, P2, A24, BIGMONT_NBITS_ORDER, BIGMONT_MAXBITS_ORDER, CurveIsogeny);
+    ladder(
+        X,
+        scalar,
+        P1,
+        P2,
+        A24,
+        BIGMONT_NBITS_ORDER,
+        BIGMONT_MAXBITS_ORDER,
+        CurveIsogeny
+    );
 
     fpinv751_mont(P1->Z);
     fpmul751_mont(P1->X, P1->Z, (digit_t*)xout);
@@ -238,8 +259,13 @@ CRYPTO_STATUS BigMont_ladder(unsigned char* x, digit_t* m, unsigned char* xout, 
 }
 
 
-CRYPTO_STATUS secret_pt(point_basefield_t P, digit_t* m, unsigned int AliceOrBob, point_proj_t R, PCurveIsogenyStruct CurveIsogeny)
-{ // Computes key generation entirely in the base field by exploiting a 1-dimensional Montgomery ladder in the trace zero subgroup and 
+CRYPTO_STATUS secret_pt(
+    point_basefield_t P,
+    digit_t* m,
+    unsigned int AliceOrBob,
+    point_proj_t R,
+    PCurveIsogenyStruct CurveIsogeny
+) { // Computes key generation entirely in the base field by exploiting a 1-dimensional Montgomery ladder in the trace zero subgroup and 
   // recovering the y-coordinate for the addition. All operations in the base field GF(p).
   // Input:  The scalar m, point P = (x,y) on E in the base field subgroup and Q = (x1,y1*i) on E in the trace-zero subgroup. 
   //         x,y,x1,y1 are all in the base field.          
@@ -310,8 +336,16 @@ CRYPTO_STATUS secret_pt(point_basefield_t P, digit_t* m, unsigned int AliceOrBob
 }
 
 
-CRYPTO_STATUS ladder_3_pt(f2elm_t xP, f2elm_t xQ, f2elm_t xPQ, digit_t* m, unsigned int AliceOrBob, point_proj_t W, f2elm_t A, PCurveIsogenyStruct CurveIsogeny)
-{ // Computes P+[m]Q via x-only arithmetic. Algorithm by De Feo, Jao and Plut.
+CRYPTO_STATUS ladder_3_pt(
+    f2elm_t xP,
+    f2elm_t xQ,
+    f2elm_t xPQ,
+    digit_t* m,
+    unsigned int AliceOrBob,
+    point_proj_t W,
+    f2elm_t A,
+    PCurveIsogenyStruct CurveIsogeny
+) { // Computes P+[m]Q via x-only arithmetic. Algorithm by De Feo, Jao and Plut.
   // Input:  three affine points xP,xQ,xPQ and Montgomery constant A.
   // Output: projective Montgomery x-coordinates of x(P+[m]Q)=WX/WZ
     point_proj_t U = {0}, V = {0};
@@ -349,7 +383,7 @@ CRYPTO_STATUS ladder_3_pt(f2elm_t xP, f2elm_t xQ, f2elm_t xPQ, digit_t* m, unsig
     }
     
     for (i = nbits; i > 0; i--) {
-        bit = (unsigned int)(temp_scalar[NWORDS_ORDER-1] >> (RADIX-1));
+        bit = (unsigned int)(temp_scalar[NWORDS_ORDER - 1] >> (RADIX - 1));
         mp_shiftl1(temp_scalar, NWORDS_ORDER);
         mask = 0 - (digit_t)bit;
 
@@ -484,7 +518,7 @@ void xTPLe(point_proj_t P, point_proj_t Q, f2elm_t A, f2elm_t C, int e)
   // Output: projective Montgomery x-coordinates P <- (3^e)*P.
     int i;
       
-    copy_words((digit_t*)P, (digit_t*)Q, 2*2*NWORDS_FIELD);
+    copy_words((digit_t*)P, (digit_t*)Q, 2 * 2 * NWORDS_FIELD);
 
     for (i = 0; i < e; i++) {
         xTPL(Q, Q, A, C);

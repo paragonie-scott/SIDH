@@ -28,8 +28,9 @@ __inline void fpcopy751(felm_t a, felm_t c)
 { // Copy of a field element, c = a
     unsigned int i;
 
-    for (i = 0; i < NWORDS_FIELD; i++)
+    for (i = 0; i < NWORDS_FIELD; i++) {
         c[i] = a[i];
+    }
 }
 
 
@@ -37,8 +38,9 @@ __inline void fpzero751(felm_t a)
 { // Zeroing a field element, a = 0
     unsigned int i;
 
-    for (i = 0; i < NWORDS_FIELD; i++)
+    for (i = 0; i < NWORDS_FIELD; i++) {
         a[i] = 0;
+    }
 }
 
 
@@ -47,7 +49,11 @@ void to_mont(felm_t a, felm_t mc)
   // mc = a*R^2*R^-1 mod p751 = a*R mod p751, where a in [0, p751-1]
   // The Montgomery constant R^2 mod p751 is the global value "Montgomery_R2". 
 
-    fpmul751_mont(a, (digit_t*)&Montgomery_R2, mc);
+    fpmul751_mont(
+        a, 
+        (digit_t*) &Montgomery_R2,
+        mc
+    );
 }
 
 
@@ -63,14 +69,13 @@ void from_mont(felm_t ma, felm_t c)
 
 static __inline unsigned int is_felm_zero(felm_t x)
 { // Is x = 0? return 1 (TRUE) if condition is true, 0 (FALSE) otherwise
-   // NOTE: this function does not run in constant-time so it can only be used in functions
-   //       incorporating countermeasures such as projective randomization.
     unsigned int i;
+    unsigned int r = 0;
 
     for (i = 0; i < NWORDS_FIELD; i++) {
-        if (x[i] != 0) return false;
+        r |= x[i] ^ 0;
     }
-    return true;
+    return r;
 }
 
 
@@ -82,18 +87,13 @@ static __inline unsigned int is_felm_even(felm_t x)
 
 static __inline unsigned int is_felm_lt(felm_t x, felm_t y)
 { // Is x < y? return 1 (TRUE) if condition is true, 0 (FALSE) otherwise
-  // NOTE: this function does not run in constant-time so it can only be used in functions
-  //       incorporating countermeasures such as projective randomization.
     int i;
+    int r = 0;
 
-    for (i = NWORDS_FIELD-1; i >= 0; i--) {
-        if (x[i] < y[i]) { 
-            return true;
-        } else if (x[i] > y[i]) {
-            return false;
-        }
+    for (i = NWORDS_FIELD - 1; i >= 0; i--) {
+        r += CT_LT(x[i], y[i]) & 1;
     }
-    return false;
+    return r;
 }
 
 
@@ -135,10 +135,16 @@ void mp_shiftr1(digit_t* x, unsigned int nwords)
 { // Multiprecision right shift by one
     unsigned int i;
 
-    for (i = 0; i < nwords-1; i++) {
-        SHIFTR(x[i+1], x[i], 1, x[i], RADIX);
+    for (i = 0; i < nwords - 1; i++) {
+        SHIFTR(
+            x[i + 1],
+            x[i],
+            1,
+            x[i],
+            RADIX
+        );
     }
-    x[nwords-1] >>= 1;
+    x[nwords - 1] >>= 1;
 }
 
 
@@ -146,8 +152,14 @@ void mp_shiftl1(digit_t* x, unsigned int nwords)
 { // Multiprecision left right shift by one
     int i;
 
-    for (i = nwords-1; i > 0; i--) {
-        SHIFTL(x[i], x[i-1], 1, x[i], RADIX);
+    for (i = nwords - 1; i > 0; i--) {
+        SHIFTL(
+            x[i],
+            x[i - 1],
+            1,
+            x[i],
+            RADIX
+        );
     }
     x[0] <<= 1;
 }
@@ -160,7 +172,7 @@ static __inline void power2_setup(felm_t x, int mark)
     fpzero751(x);
     while (mark >= 0) {
         if (mark < RADIX) {
-            x[i] = (digit_t)1 << mark;
+            x[i] = (digit_t) 1 << mark;
         }
         mark -= RADIX;
         i += 1;
@@ -198,124 +210,241 @@ void fpinv751_mont(felm_t a)
     fpmul751_mont(t[1], tt, t[2]);
     fpmul751_mont(t[2], tt, t[3]); 
     fpmul751_mont(t[3], tt, t[3]);
-    for (i = 3; i <= 8; i++) fpmul751_mont(t[i], tt, t[i+1]);
+    for (i = 3; i <= 8; i++) {
+        fpmul751_mont(t[i], tt, t[i+1]);
+    }
     fpmul751_mont(t[9], tt, t[9]);
-    for (i = 9; i <= 20; i++) fpmul751_mont(t[i], tt, t[i+1]);
+    for (i = 9; i <= 20; i++) {
+        fpmul751_mont(t[i], tt, t[i+1]);
+    }
     fpmul751_mont(t[21], tt, t[21]); 
-    for (i = 21; i <= 24; i++) fpmul751_mont(t[i], tt, t[i+1]); 
+    for (i = 21; i <= 24; i++) {
+        fpmul751_mont(t[i], tt, t[i+1]);
+    }
     fpmul751_mont(t[25], tt, t[25]);
     fpmul751_mont(t[25], tt, t[26]);
 
     fpcopy751(a, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[20], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[24], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[11], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[8], tt, tt);
-    for (i = 0; i < 8; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 8; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[2], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[23], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[2], tt, tt);
-    for (i = 0; i < 9; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 9; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[2], tt, tt);
-    for (i = 0; i < 10; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 10; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[15], tt, tt);
-    for (i = 0; i < 8; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 8; i++){
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[13], tt, tt);
-    for (i = 0; i < 8; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 8; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[26], tt, tt);
-    for (i = 0; i < 8; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 8; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[20], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[11], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[10], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[14], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[4], tt, tt);
-    for (i = 0; i < 10; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 10; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[18], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[1], tt, tt);
-    for (i = 0; i < 7; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 7; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[22], tt, tt);
-    for (i = 0; i < 10; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 10; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[6], tt, tt);
-    for (i = 0; i < 7; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 7; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[24], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[9], tt, tt);
-    for (i = 0; i < 8; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 8; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[18], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[17], tt, tt);
-    for (i = 0; i < 8; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 8; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(a, tt, tt);
-    for (i = 0; i < 10; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 10; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[16], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[7], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[0], tt, tt);
-    for (i = 0; i < 7; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 7; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[12], tt, tt);
-    for (i = 0; i < 7; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 7; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[19], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[22], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[25], tt, tt);
-    for (i = 0; i < 7; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 7; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[2], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[10], tt, tt);
-    for (i = 0; i < 7; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 7; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[22], tt, tt);
-    for (i = 0; i < 8; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 8; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[18], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[4], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[14], tt, tt);
-    for (i = 0; i < 7; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 7; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[13], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[5], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[23], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[21], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[2], tt, tt);
-    for (i = 0; i < 7; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 7; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[23], tt, tt);
-    for (i = 0; i < 8; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 8; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[12], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[9], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[3], tt, tt);
-    for (i = 0; i < 7; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 7; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[13], tt, tt);
-    for (i = 0; i < 7; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 7; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[17], tt, tt);
-    for (i = 0; i < 8; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 8; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[26], tt, tt);
-    for (i = 0; i < 8; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 8; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[5], tt, tt);
-    for (i = 0; i < 8; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 8; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[8], tt, tt);
-    for (i = 0; i < 8; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 8; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[11], tt, tt);
-    for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 6; i++) {
+        fpsqr751_mont(tt, tt);
+    }
     fpmul751_mont(t[22], tt, tt);
-    for (i = 0; i < 7; i++) fpsqr751_mont(tt, tt);
+    for (i = 0; i < 7; i++) {
+        fpsqr751_mont(tt, tt);
+    }
+    
     for (j = 0; j < 61; j++) {
         fpmul751_mont(t[26], tt, tt);
         for (i = 0; i < 6; i++) fpsqr751_mont(tt, tt);
@@ -388,20 +517,26 @@ void fp2mul751_mont(f2elm_t a, f2elm_t b, f2elm_t c)
     digit_t mask;
     unsigned int i, borrow;
 
-    mp_mul(a[0], b[0], tt1, NWORDS_FIELD);           // tt1 = a0*b0
-    mp_mul(a[1], b[1], tt2, NWORDS_FIELD);           // tt2 = a1*b1
-    mp_add(a[0], a[1], t1, NWORDS_FIELD);            // t1 = a0+a1
-    mp_add(b[0], b[1], t2, NWORDS_FIELD);            // t2 = b0+b1
-    borrow = mp_sub(tt1, tt2, tt3, 2*NWORDS_FIELD);  // tt3 = a0*b0 - a1*b1
-    mask = 0 - (digit_t)borrow;                      // if tt3 < 0 then mask = 0xFF..F, else if tt3 >= 0 then mask = 0x00..0
+    mp_mul(a[0], b[0], tt1, NWORDS_FIELD);            // tt1 = a0*b0
+    mp_mul(a[1], b[1], tt2, NWORDS_FIELD);            // tt2 = a1*b1
+    mp_add(a[0], a[1], t1, NWORDS_FIELD);             // t1 = a0+a1
+    mp_add(b[0], b[1], t2, NWORDS_FIELD);             // t2 = b0+b1
+    borrow = mp_sub(tt1, tt2, tt3, 2 * NWORDS_FIELD); // tt3 = a0*b0 - a1*b1
+    mask = 0 - (digit_t) borrow;                      // if tt3 < 0 then mask = 0xFF..F, else if tt3 >= 0 then mask = 0x00..0
     borrow = 0;
     for (i = 0; i < NWORDS_FIELD; i++) {             // tt3 = tt3 + (mask & 2^768*p751)
-        ADDC(borrow, tt3[NWORDS_FIELD+i], ((digit_t*)p751)[i] & mask, borrow, tt3[NWORDS_FIELD+i]);
+        ADDC(
+            borrow,
+            tt3[NWORDS_FIELD + i],
+            ((digit_t*) p751)[i] & mask,
+            borrow,
+            tt3[NWORDS_FIELD+i]
+        );
     }
     rdc_mont(tt3, c[0]);                             // c[0] = a0*b0 - a1*b1
-    mp_add(tt1, tt2, tt1, 2*NWORDS_FIELD);           // tt1 = a0*b0 + a1*b1
+    mp_add(tt1, tt2, tt1, 2 * NWORDS_FIELD);         // tt1 = a0*b0 + a1*b1
     mp_mul(t1, t2, tt2, NWORDS_FIELD);               // tt2 = (a0+a1)*(b0+b1)
-    mp_sub(tt2, tt1, tt2, 2*NWORDS_FIELD);           // tt2 = (a0+a1)*(b0+b1) - a0*b0 - a1*b1 
+    mp_sub(tt2, tt1, tt2, 2 * NWORDS_FIELD);         // tt2 = (a0+a1)*(b0+b1) - a0*b0 - a1*b1 
     rdc_mont(tt2, c[1]);                             // c[1] = (a0+a1)*(b0+b1) - a0*b0 - a1*b1 
 }
 
@@ -438,8 +573,11 @@ void fp2inv751_mont(f2elm_t a)
 }
 
 
-void swap_points_basefield(point_basefield_proj_t P, point_basefield_proj_t Q, digit_t option)
-{ // Swap points over the base field 
+void swap_points_basefield(
+    point_basefield_proj_t P,
+    point_basefield_proj_t Q,
+    digit_t option
+) { // Swap points over the base field 
   // If option = 0 then P <- P and Q <- Q, else if option = 0xFF...FF then P <- Q and Q <- P
     digit_t temp;
     unsigned int i;
